@@ -1,0 +1,80 @@
+import tkinter as tk
+import hashlib
+from tkinter import messagebox
+
+usuario = {}
+
+def mostrar_cadastro():
+    messagebox.showinfo("Aviso", "Cadastro concluído!")
+
+def mostrar_login():
+    messagebox.showinfo("Aviso", "Login concluído!")
+
+def cadastrar():
+    email = gmail.get()
+    senha_usuario = senha.get()
+
+    if email == '' or senha_usuario == '':
+        messagebox.showerror('Erro', 'Preencha todos os campos!')
+        return
+
+    # Criptografar 
+    senha_hash = hashlib.md5(senha_usuario.encode()).hexdigest()
+
+    usuario['email'] = email
+    usuario['senha'] = senha_hash
+
+    mostrar_cadastro()
+    nova_tela()
+
+def nova_tela():
+    nova_janela = tk.Toplevel()
+    nova_janela.title('Login')
+    nova_janela.geometry('300x250')
+
+    tk.Label(nova_janela, text='Login', font=('Arial', 20)).pack()
+
+    tk.Label(nova_janela, text='Gmail', font=('Arial', 15)).pack(pady=5)
+    gmail_login = tk.Entry(nova_janela)
+    gmail_login.pack()
+
+    tk.Label(nova_janela, text='Senha', font=('Arial', 15)).pack(pady=5)
+    senha_login = tk.Entry(nova_janela, show='*')  # Esconde senha
+    senha_login.pack()
+
+    def verificar_login():
+        email_login = gmail_login.get()
+        senha_digitada = senha_login.get()
+
+        if email_login == '' or senha_digitada == '':
+            messagebox.showerror('Erro', 'Preencha todos os campos!')
+            return
+
+        senha_hash = hashlib.md5(senha_digitada.encode()).hexdigest()
+
+        if email_login == usuario.get('email') and senha_hash == usuario.get('senha'):
+            mostrar_login()
+        else:
+            erro_label = tk.Label(nova_janela, text='Email ou senha incorretos.', fg='red', font=('Arial', 12))
+            erro_label.pack()
+            nova_janela.after(3000, erro_label.destroy)
+
+    tk.Button(nova_janela, text="Entrar", font=('Arial', 15), command=verificar_login).pack(pady=20)
+
+# 1 Janela 
+jan = tk.Tk()
+jan.geometry('300x400')
+jan.title('Cadastro')
+
+tk.Label(text='Cadastro', font=('Arial', 20)).pack(pady=10)
+tk.Label(text='Gmail', font=('Arial', 15)).pack(pady=5)
+gmail = tk.Entry()
+gmail.pack()
+
+tk.Label(text='Senha', font=('Arial', 15)).pack(pady=5)
+senha = tk.Entry(show='*')
+senha.pack()
+
+tk.Button(text='Cadastrar', font=('Arial', 20), command=cadastrar).pack(pady=20)
+
+jan.mainloop()
