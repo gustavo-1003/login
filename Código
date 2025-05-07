@@ -18,63 +18,82 @@ def cadastrar():
         messagebox.showerror('Erro', 'Preencha todos os campos!')
         return
 
-    # Criptografar 
     senha_hash = hashlib.md5(senha_usuario.encode()).hexdigest()
 
     usuario['email'] = email
     usuario['senha'] = senha_hash
 
     mostrar_cadastro()
-    nova_tela()
+    mostrar_frame(frame_login)
 
-def nova_tela():
-    nova_janela = tk.Toplevel()
-    nova_janela.title('Login')
-    nova_janela.geometry('300x250')
+tentativas = 0 
+def verificar_login(): 
+    global tentativas 
+    email_login = gmail_login.get()
+    senha_digitada = senha_login.get()
 
-    tk.Label(nova_janela, text='Login', font=('Arial', 20)).pack()
+    if email_login == '' or senha_digitada == '':
+        messagebox.showerror('Erro', 'Preencha todos os campos!')
+        return
 
-    tk.Label(nova_janela, text='Gmail', font=('Arial', 15)).pack(pady=5)
-    gmail_login = tk.Entry(nova_janela)
-    gmail_login.pack()
+    senha_hash = hashlib.md5(senha_digitada.encode()).hexdigest()
 
-    tk.Label(nova_janela, text='Senha', font=('Arial', 15)).pack(pady=5)
-    senha_login = tk.Entry(nova_janela, show='*')  # Esconde senha
-    senha_login.pack()
-
-    def verificar_login():
-        email_login = gmail_login.get()
-        senha_digitada = senha_login.get()
-
-        if email_login == '' or senha_digitada == '':
-            messagebox.showerror('Erro', 'Preencha todos os campos!')
-            return
-
-        senha_hash = hashlib.md5(senha_digitada.encode()).hexdigest()
-
-        if email_login == usuario.get('email') and senha_hash == usuario.get('senha'):
-            mostrar_login()
-        else:
-            erro_label = tk.Label(nova_janela, text='Email ou senha incorretos.', fg='red', font=('Arial', 12))
+    if email_login == usuario.get('email') and senha_hash == usuario.get('senha'):
+        mostrar_login()
+        tentativas = 0  # reseta tentativas após sucesso
+    else:
+        tentativas += 1
+        if tentativas < 3:
+            erro_label = tk.Label(frame_login, text=f'Email ou senha incorretos. Você tem {3-tentativas} tentativa(s) restante(s).', fg='red', font=('Arial', 12))
             erro_label.pack()
-            nova_janela.after(3000, erro_label.destroy)
+            frame_login.after(3000, erro_label.destroy)
+        else:
+            erro_label = tk.Label(frame_login, text='Senha e login errados 3 vezes! Faça o cadastro novamente.', fg='red', font=('Arial', 12))
+            erro_label.pack()
+            frame_login.after(3000, erro_label.destroy)
+            tentativas = 0  # opcional: pode forçar voltar para cadastro
+            mostrar_frame(frame_cadastro)
 
-    tk.Button(nova_janela, text="Entrar", font=('Arial', 15), command=verificar_login).pack(pady=20)
 
-# 1 Janela 
+def mostrar_frame(frame):
+    frame_cadastro.pack_forget()
+    frame_login.pack_forget()
+    frame.pack()
+
+# Janela principal
 jan = tk.Tk()
 jan.geometry('300x400')
-jan.title('Cadastro')
+jan.title('Sistema de Login')
 
-tk.Label(text='Cadastro', font=('Arial', 20)).pack(pady=10)
-tk.Label(text='Gmail', font=('Arial', 15)).pack(pady=5)
-gmail = tk.Entry()
+# Frame de cadastro
+frame_cadastro = tk.Frame(jan)
+
+tk.Label(frame_cadastro, text='Cadastro', font=('Arial', 20)).pack(pady=10)
+tk.Label(frame_cadastro, text='Gmail', font=('Arial', 15)).pack(pady=5)
+gmail = tk.Entry(frame_cadastro)
 gmail.pack()
 
-tk.Label(text='Senha', font=('Arial', 15)).pack(pady=5)
-senha = tk.Entry(show='*')
+tk.Label(frame_cadastro, text='Senha', font=('Arial', 15)).pack(pady=5)
+senha = tk.Entry(frame_cadastro, show='*')
 senha.pack()
 
-tk.Button(text='Cadastrar', font=('Arial', 20), command=cadastrar).pack(pady=20)
+tk.Button(frame_cadastro, text='Cadastrar', font=('Arial', 20), command=cadastrar).pack(pady=20)
+
+# Frame de login
+frame_login = tk.Frame(jan)
+
+tk.Label(frame_login, text='Login', font=('Arial', 20)).pack(pady=10)
+tk.Label(frame_login, text='Gmail', font=('Arial', 15)).pack(pady=5)
+gmail_login = tk.Entry(frame_login)
+gmail_login.pack()
+
+tk.Label(frame_login, text='Senha', font=('Arial', 15)).pack(pady=5)
+senha_login = tk.Entry(frame_login, show='*')
+senha_login.pack()
+
+tk.Button(frame_login, text='Entrar', font=('Arial', 15), command=verificar_login).pack(pady=20)
+
+# Começa com tela de cadastro
+mostrar_frame(frame_cadastro)
 
 jan.mainloop()
